@@ -140,9 +140,9 @@ const app = {
   admin_settings: {
     client_id: {
       schema: {
-       type: 'string',
-       maxLength: 50,
-       title: 'Client id'
+        type: 'string',
+        maxLength: 50,
+        title: 'Client id'
       },
       hide: true
     },
@@ -163,14 +163,77 @@ const app = {
       hide: true
     },
     is_sandbox: {
-     schema: {
-       type: 'boolean',
-       default: false,
-       title: 'Api de testes'
-     },
-     hide: false
-   }
-
+      schema: {
+        type: 'boolean',
+        default: false,
+        title: 'Api de testes'
+      },
+      hide: false
+    },
+    discount: {
+      schema: {
+        type: 'object',
+        required: [
+          'value'
+        ],
+        additionalProperties: false,
+        properties: {
+          apply_at: {
+            type: 'string',
+            enum: [
+              'total',
+              'subtotal',
+              'freight'
+            ],
+            default: 'subtotal',
+            title: 'Aplicar desconto em',
+            description: 'Em qual valor o desconto deverá ser aplicado no checkout'
+          },
+          type: {
+            type: 'string',
+            enum: [
+              'percentage',
+              'fixed'
+            ],
+            default: 'percentage',
+            title: 'Tipo de desconto',
+            description: 'Desconto com valor percentual ou fixo'
+          },
+          value: {
+            type: 'number',
+            minimum: -99999999,
+            maximum: 99999999,
+            title: 'Valor do desconto',
+            description: 'Valor percentual ou fixo a ser descontado, dependendo to tipo configurado'
+          }
+        },
+        title: 'Desconto',
+        description: 'Desconto a ser aplicado para pagamentos via Addi'
+      },
+      hide: false
+    },
+    min_amount: {
+      schema: {
+        type: 'number',
+        minimum: 0,
+        maximum: 99999999,
+        default: 1,
+        title: 'Mínimo para mostrar formas de pagamento',
+        description: 'Valor deve corresponder ao mesmo configurado na Addi'
+      },
+      hide: true
+    },
+    max_amount: {
+      schema: {
+        type: 'number',
+        minimum: 0,
+        maximum: 99999999,
+        default: 1,
+        title: 'Máximo para mostrar formas de pagamento',
+        description: 'Valor deve corresponder ao mesmo configurado na Addi'
+      },
+      hide: true
+    }
   }
 }
 

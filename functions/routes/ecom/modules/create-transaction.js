@@ -1,3 +1,5 @@
+const ecomUtils = require('@ecomplus/utils')
+
 exports.post = ({ appSdk, admin }, req, res) => {
   /**
    * Requests coming from Modules API have two object properties on body: `params` and `application`.
@@ -17,7 +19,45 @@ exports.post = ({ appSdk, admin }, req, res) => {
   // merge all app options configured by merchant
   const appData = Object.assign({}, application.data, application.hidden_data)
   // setup required `transaction` response object
-  const transaction = {}
+  const orderId = params.order_id
+  const { amount, buyer, payer, to, items } = params
+  console.log('> Transaction #', storeId, orderId)
+  const finalAmount = amount.total
+  const finalFreight = amount.freight
+  let addiTransaction
+  addiTransaction = {
+    orderId,
+    totalAmount: Math.floor(finalAmount * 100),
+    shippingAmount: Math.floor(finalFreight * 100) || 0,
+    currency: params.currency_id || 'BRL'
+  }
+  addiTransaction.items = []
+  items.forEach(item => {
+    if (item.quantity > 0) {
+      addiTransaction.items.push({
+        sku: item.sku,
+        name: item.name || item.sku,
+        unitPrice: Math.floor((item.final_price || item.price) * 100),
+        quantity: item.quantity
+      })
+    }
+  })
+  addiTransaction.client = {
+    idType: buyer.registry_type === 'j' ? 'CNPJ' : 'CPF',
+    idNumber: String(buyer.doc_number),
+    firstName: buyer.fullname.replace(/\s.*/, ''),
+    lastName: buyer.fullname.replace(/[^\s]+\s/, ''),
+    email: buyer.email,
+    cellphone: buyer.phone.number,
+    cellphoneCountryCode: `+${(buyer.phone.country_code || '55')}`,
+    address: {
+      /* lineOne: cr 48 156 25 25,
+      city: Sao Paulo,
+      country: BR */
+    }
+  }
+
+
 
   // indicates whether the buyer should be redirected to payment link right after checkout
   let redirectToPayment = false
