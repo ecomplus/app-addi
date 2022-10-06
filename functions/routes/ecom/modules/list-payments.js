@@ -20,6 +20,7 @@ exports.post = ({ appSdk }, req, res) => {
   }
   // merge all app options configured by merchant
   const appData = Object.assign({}, application.data, application.hidden_data)
+  console.log(appData)
 
   /* DO THE STUFF HERE TO FILL RESPONSE OBJECT WITH PAYMENT GATEWAYS */
 
