@@ -1,11 +1,20 @@
 {
-  "app_id": 9000,
-  "title": "My Awesome E-Com Plus App",
-  "slug": "my-awesome-ecom-plus-app",
+  "app_id": 126439,
+  "title": "Addi",
+  "slug": "addi",
   "type": "external",
   "state": "active",
   "authentication": true,
-  "modules": {},
+  "modules": {
+    "list_payments": {
+      "enabled": true,
+      "endpoint": "https://us-central1-addi-test-payment.cloudfunctions.net/app/ecom/modules/list-payments"
+    },
+    "create_transaction": {
+      "enabled": true,
+      "endpoint": "https://us-central1-addi-test-payment.cloudfunctions.net/app/ecom/modules/create-transaction"
+    }
+  },
   "auth_scope": {
     "stores/me": [
       "GET"
@@ -17,15 +26,53 @@
     "brands": [],
     "categories": [],
     "customers": [],
-    "orders": [],
+    "orders": [
+      "GET"
+    ],
     "carts": [],
     "orders/fulfillments": [],
-    "orders/payments_history": [],
+    "orders/payments_history": [
+      "POST"
+    ],
     "products/quantity": [],
     "products/variations/quantity": [],
     "products/price": [],
     "products/variations/price": []
   },
-  "auth_callback_uri": "https://us-central1-ecom-app-boilerplate.cloudfunctions.net/app/ecom/auth-callback",
+  "admin_settings": {
+    "client_id": {
+      "schema": {
+        "type": "string",
+        "maxLength": 50,
+        "title": "Client id"
+      },
+      "hide": true
+    },
+    "client_secret": {
+      "schema": {
+        "type": "string",
+        "maxLength": 50,
+        "title": "Client Secret"
+      },
+      "hide": true
+    },
+    "ally_slug": {
+      "schema": {
+        "type": "string",
+        "maxLength": 50,
+        "title": "Slug da conta"
+      },
+      "hide": true
+    },
+    "is_sandbox": {
+      "schema": {
+        "type": "boolean",
+        "default": false,
+        "title": "Api de testes"
+      },
+      "hide": false
+    }
+  },
+  "auth_callback_uri": "https://us-central1-addi-test-payment.cloudfunctions.net/app/ecom/auth-callback",
   "version": "1.0.0"
 }
