@@ -1,4 +1,7 @@
 const ecomUtils = require('@ecomplus/utils')
+const { baseUri } = require('./../../../__env')
+const axios = require('axios')
+const { CreateAxios } = require('../../../lib/addi/create-access')
 
 exports.post = ({ appSdk, admin }, req, res) => {
   /**
@@ -18,6 +21,8 @@ exports.post = ({ appSdk, admin }, req, res) => {
   const { storeId } = req
   // merge all app options configured by merchant
   const appData = Object.assign({}, application.data, application.hidden_data)
+  // create access with axios
+  const addiAxios = CreateAxios(appData.client_id, appData.client_secret, appData.is_sandbox, storeId)
   // setup required `transaction` response object
   const orderId = params.order_id
   const { amount, buyer, payer, to, items } = params
@@ -42,6 +47,12 @@ exports.post = ({ appSdk, admin }, req, res) => {
       })
     }
   })
+  const parseAddress = to => ({
+    lineOne: ecomUtils.lineAddress(to),
+    city: to.city,
+    country: to.country_code ? to.country_code.toUpperCase() : 'BR',
+  })
+
   addiTransaction.client = {
     idType: buyer.registry_type === 'j' ? 'CNPJ' : 'CPF',
     idNumber: String(buyer.doc_number),
@@ -50,12 +61,35 @@ exports.post = ({ appSdk, admin }, req, res) => {
     email: buyer.email,
     cellphone: buyer.phone.number,
     cellphoneCountryCode: `+${(buyer.phone.country_code || '55')}`,
-    address: {
-      /* lineOne: cr 48 156 25 25,
-      city: Sao Paulo,
-      country: BR */
-    }
+    address: parseAddress(to)
   }
+
+  addiTransaction.shippingAddress = parseAddress(to)
+  addiTransaction.billingAddress = params.billing_address
+  ? parseAddress(params.billing_address)
+  : addiTransaction.client.address
+
+  addiTransaction.allyUrlRedirection = {
+    redirectionUrl: `https://${params.domain}/app/#/confirmation`,
+    callbackUrl: `${baseUri}/addi/postback`
+  }
+  const data = {
+    ...addiTransaction
+  }
+
+  addiAxios
+    .then((axios) => {
+      console.log('> SendTransaction Addi: ', data)
+      // url: 'https://cloudwalk.github.io/infinitepay-docs/#autorizando-um-pagamento',
+      const headers = {
+        Accept: 'application/json'
+      }
+      // console.log('>>Before data: ', data)
+      const timeout = 40000
+      return axios.post('/v1/online-applications', data, { headers, timeout })
+    })
+
+
 
 
 

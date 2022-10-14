@@ -5,7 +5,7 @@ const auth = require('./create-auth')
 
 const firestoreColl = 'addi_tokens'
 
-const AxiosOrToken = (resolve, reject, clienId, clientSecret, isSandbox, storeId, self) => {
+const AxiosOrToken = (resolve, reject, clientId, clientSecret, isSandbox, storeId, self) => {
 
   let documentRef
   if (firestoreColl) {
@@ -25,7 +25,7 @@ const AxiosOrToken = (resolve, reject, clienId, clientSecret, isSandbox, storeId
 
   const handleAuth = (resolve) => {
     console.log('> addi Auth ', storeId)
-    auth(clienId, clientSecret, storeId, isSandbox)
+    auth(clientId, clientSecret, storeId, isSandbox)
       .then((resp) => {
         console.log('Acesso a resposta da autorizacao',resp)
         authenticate(resp.access_token, resolve)
@@ -63,15 +63,15 @@ const AxiosOrToken = (resolve, reject, clienId, clientSecret, isSandbox, storeId
   }
 }
 
-const CreateAxios = (clienId, clientSecret, isSandbox, storeId) => {
+const CreateAxios = (clientId, clientSecret, isSandbox, storeId) => {
   return new Promise((resolve, reject) => {
-    AxiosOrToken(resolve, reject, clienId, clientSecret, isSandbox, storeId, this)
+    AxiosOrToken(resolve, reject, clientId, clientSecret, isSandbox, storeId, this)
   })
 }
 
-const getToken = (clienId, clientSecret, isSandbox, storeId) => {
+const getToken = (clientId, clientSecret, isSandbox, storeId) => {
   return new Promise((resolve, reject) => {
-    AxiosOrToken(resolve, reject, clienId, clientSecret, isSandbox, storeId)
+    AxiosOrToken(resolve, reject, clientId, clientSecret, isSandbox, storeId)
   })
 }
 
