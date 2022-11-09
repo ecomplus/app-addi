@@ -1,4 +1,5 @@
-exports.post = ({ appSdk }, req, res) => {
+const axios = require('axios')
+exports.post = async ({ appSdk }, req, res) => {
   /**
    * Requests coming from Modules API have two object properties on body: `params` and `application`.
    * `application` is a copy of your app installed by the merchant,
@@ -18,6 +19,10 @@ exports.post = ({ appSdk }, req, res) => {
   const response = {
     payment_gateways: []
   }
+
+  const isSandbox = true // TODO: false
+  console.log('> List Payment #', storeId, `${isSandbox ? '-isSandbox' : ''}`)
+
   // merge all app options configured by merchant
   const appData = Object.assign({}, application.data, application.hidden_data)
 
@@ -29,15 +34,29 @@ exports.post = ({ appSdk }, req, res) => {
   }
 
   const amount = params.amount || {}
+
+  if (!appData.ally_slug) {
+    return res.status(409).send({
+      error: 'NO_ADDI_ALLY_SLUG',
+      message: 'Addi Slug da conta indefinido (lojista deve configurar o aplicativo)'
+    })
+  }
+
+  let url = `https://channels-public-api.addi${isSandbox ? '-staging-br.com' : '.com.br'}`
+  url += `/allies/${appData.ally_slug}/config?requestedAmount=${amount.total}`
+
+  let validatePaymentByAddi
+  if (amount.total) {
+    validatePaymentByAddi = (await axios.get(url)).data
+    // console.log('>> ', validatePaymentByAddi)
+  }
+
   // common payment methods data
   const intermediator = {
     name: 'Addi',
     link: 'https://api.addi.com.br',
     code: 'addi_app'
   }
-
-  const isSandbox = true // TODO: false
-  console.log('> List Payment #', storeId, `${isSandbox ? '-isSandbox' : ''}`)
 
   const { discount } = appData
 
@@ -49,10 +68,17 @@ exports.post = ({ appSdk }, req, res) => {
     const maxAmount = appData.max_amount || 1
     const methodConfig = (appData[paymentMethod] || {})
 
-    // Workaround for showcase
-    const validateAmount = amount.total ? (amount.total >= minAmount && amount.total <= maxAmount) : true
+    let validateAmount = false
+    if (amount.total && (validatePaymentByAddi.minAmount && validatePaymentByAddi.maxAmount)) {
+      validateAmount = (amount.total >= minAmount && amount.total <= maxAmount) &&
+        (amount.total >= validatePaymentByAddi.minAmount &&
+          amount.total <= validatePaymentByAddi.maxAmount)
+    }
 
-    if (validateAmount) {
+    // Workaround for showcase
+    const validatePayment = amount.total ? validateAmount : true
+
+    if (validatePayment) {
       const label = methodConfig.label || 'Link de Pagamento'
 
       const gateway = {
@@ -61,7 +87,7 @@ exports.post = ({ appSdk }, req, res) => {
         text: methodConfig.text,
         payment_method: {
           code: isLinkPayment ? 'balance_on_intermediary' : paymentMethod,
-          name: `${label} - ${intermediator.name}`
+          name: `${label} - ${intermediator.name} `
         },
         intermediator
       }
@@ -75,7 +101,7 @@ exports.post = ({ appSdk }, req, res) => {
           // set as default discount option
           response.discount_option = {
             ...gateway.discount,
-            label: `${label}`
+            label: `${label} `
           }
         }
 

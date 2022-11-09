@@ -258,8 +258,8 @@ const app = {
             description: 'Ícone customizado para a forma de pagamento, URL da imagem'
           }
         },
-        title: 'Link de Pagamento',
-        description: 'Opções de forma de pagamento via Addi'
+        title: 'Configurações adicionais',
+        description: 'Configurações adicionais para forma de pagamento via Addi'
       },
       hide: false
     }

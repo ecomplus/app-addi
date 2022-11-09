@@ -8,7 +8,7 @@ module.exports = (accessToken, isSandbox) => {
   if (accessToken) {
     console.log('> token ', accessToken)
     headers.Authorization = `Bearer ${accessToken}`
-    baseURL = 'api.addi.com.br'
+    baseURL = `https://api.addi${isSandbox ? '-staging-br.com' : '.com.br'}`
   }
 
   return axios.create({

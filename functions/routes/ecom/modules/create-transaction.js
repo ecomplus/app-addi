@@ -48,8 +48,8 @@ exports.post = ({ appSdk, admin }, req, res) => {
 
   const addiTransaction = {
     orderId,
-    totalAmount: Math.floor(finalAmount * 100),
-    shippingAmount: Math.floor(finalFreight * 100) || 0,
+    totalAmount: Math.floor(finalAmount),
+    shippingAmount: Math.floor(finalFreight) || 0,
     currency: params.currency_id || 'BRL'
   }
 
@@ -59,7 +59,7 @@ exports.post = ({ appSdk, admin }, req, res) => {
       addiTransaction.items.push({
         sku: item.sku,
         name: item.name || item.sku,
-        unitPrice: Math.floor((item.final_price || item.price) * 100),
+        unitPrice: Math.floor((item.final_price || item.price)),
         quantity: item.quantity
       })
     }
@@ -94,16 +94,16 @@ exports.post = ({ appSdk, admin }, req, res) => {
   addiAxios.preparing
     .then(() => {
       const { axios } = addiAxios
-      console.log('> SendTransaction Addi: ', addiTransaction)
-      const headers = {
-        Accept: 'application/json'
+      console.log('> SendTransaction Addi: ', JSON.stringify(addiTransaction), ' <<')
+      // https://axios-http.com/ptbr/docs/req_config
+      const validateStatus = function (status) {
+        return status >= 200 && status <= 301
       }
-      const timeout = 40000
-      return axios.post('/v1/online-applications', addiTransaction, { headers, timeout })
+      return axios.post('/v1/online-applications', addiTransaction, { maxRedirects: 0, validateStatus })
     })
     .then((data) => {
-      console.log('>>created transaction: ', data)
-      transactionLink.payment_link = data.headers.Location
+      console.log('>> Created transaction: ', data)
+      transactionLink.payment_link = data.headers.location
       res.send({
         redirect_to_payment: true,
         transaction: transactionLink
@@ -111,6 +111,7 @@ exports.post = ({ appSdk, admin }, req, res) => {
     })
     .catch(error => {
       // try to debug request error
+      console.error(error)
       const errCode = 'ADDI_TRANSACTION_ERR'
       let { message } = error
       const err = new Error(`${errCode} #${storeId} - ${orderId} => ${message}`)
@@ -128,8 +129,6 @@ exports.post = ({ appSdk, admin }, req, res) => {
         } else if (data && Array.isArray(data.errors) && data.errors[0] && data.errors[0].message) {
           message = data.errors[0].message
         }
-      } else {
-        console.error(err)
       }
       res.status(409)
       res.send({
