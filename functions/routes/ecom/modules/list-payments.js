@@ -20,31 +20,78 @@ exports.post = ({ appSdk }, req, res) => {
   }
   // merge all app options configured by merchant
   const appData = Object.assign({}, application.data, application.hidden_data)
-  console.log(appData)
 
-  /* DO THE STUFF HERE TO FILL RESPONSE OBJECT WITH PAYMENT GATEWAYS */
+  if (!appData.client_id || !appData.client_secret) {
+    return res.status(409).send({
+      error: 'NO_ADDI_KEYS',
+      message: 'Addi Client ID e/ou Client Secret da API indefinido(s) (lojista deve configurar o aplicativo)'
+    })
+  }
 
-  /**
-   * Sample snippets:
+  const amount = params.amount || {}
+  // common payment methods data
+  const intermediator = {
+    name: 'Addi',
+    link: 'https://api.addi.com.br',
+    code: 'addi_app'
+  }
 
-  // add new payment method option
-  response.payment_gateways.push({
-    intermediator: {
-      code: 'paupay',
-      link: 'https://www.palpay.com.br',
-      name: 'paupay'
-    },
-    payment_url: 'https://www.palpay.com.br/',
-    type: 'payment',
-    payment_method: {
-      code: 'banking_billet',
-      name: 'Boleto Bancário'
-    },
-    label: 'Boleto Bancário',
-    expiration_date: appData.expiration_date || 14
+  const isSandbox = true // TODO: false
+  console.log('> List Payment #', storeId, `${isSandbox ? '-isSandbox' : ''}`)
+
+  const { discount } = appData
+
+  const listPaymentMethods = ['payment_link']
+  // setup payment gateway object
+  listPaymentMethods.forEach(paymentMethod => {
+    const isLinkPayment = paymentMethod === 'payment_link'
+    const minAmount = appData.min_amount || 1
+    const maxAmount = appData.max_amount || 1
+    const methodConfig = (appData[paymentMethod] || {})
+
+    // Workaround for showcase
+    const validateAmount = amount.total ? (amount.total >= minAmount && amount.total <= maxAmount) : true
+
+    if (validateAmount) {
+      const label = methodConfig.label || 'Link de Pagamento'
+
+      const gateway = {
+        label,
+        icon: methodConfig.icon,
+        text: methodConfig.text,
+        payment_method: {
+          code: isLinkPayment ? 'balance_on_intermediary' : paymentMethod,
+          name: `${label} - ${intermediator.name}`
+        },
+        intermediator
+      }
+      if (discount && discount.value > 0 && (!amount.discount || discount.cumulative_discount !== false)) {
+        gateway.discount = {
+          apply_at: discount.apply_at,
+          type: discount.type,
+          value: discount.value
+        }
+        if (discount.apply_at !== 'freight') {
+          // set as default discount option
+          response.discount_option = {
+            ...gateway.discount,
+            label: `${label}`
+          }
+        }
+
+        if (discount.min_amount) {
+          // check amount value to apply discount
+          if (amount.total < discount.min_amount) {
+            delete gateway.discount
+          }
+          if (response.discount_option) {
+            response.discount_option.min_amount = discount.min_amount
+          }
+        }
+      }
+      response.payment_gateways.push(gateway)
+    }
   })
-
-  */
 
   res.send(response)
 }

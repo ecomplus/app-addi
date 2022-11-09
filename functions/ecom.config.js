@@ -34,13 +34,13 @@ const app = {
      * Triggered when listing payments, must return available payment methods.
      * Start editing `routes/ecom/modules/list-payments.js`
      */
-    list_payments:        { enabled: true },
+    list_payments: { enabled: true },
 
     /**
      * Triggered when order is being closed, must create payment transaction and return info.
      * Start editing `routes/ecom/modules/create-transaction.js`
      */
-    create_transaction:   { enabled: true },
+    create_transaction: { enabled: true },
   },
 
   /**
@@ -141,7 +141,7 @@ const app = {
     client_id: {
       schema: {
         type: 'string',
-        maxLength: 50,
+        maxLength: 64,
         title: 'Client id'
       },
       hide: true
@@ -149,7 +149,7 @@ const app = {
     client_secret: {
       schema: {
         type: 'string',
-        maxLength: 50,
+        maxLength: 64,
         title: 'Client Secret'
       },
       hide: true
@@ -157,18 +157,10 @@ const app = {
     ally_slug: {
       schema: {
         type: 'string',
-        maxLength: 50,
+        maxLength: 64,
         title: 'Slug da conta'
       },
       hide: true
-    },
-    is_sandbox: {
-      schema: {
-        type: 'boolean',
-        default: false,
-        title: 'Api de testes'
-      },
-      hide: false
     },
     discount: {
       schema: {
@@ -233,6 +225,43 @@ const app = {
         description: 'Valor deve corresponder ao mesmo configurado na Addi'
       },
       hide: true
+    },
+    payment_link: {
+      schema: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          disable: {
+            type: 'boolean',
+            default: true,
+            title: 'Desabilitar link de pagamento',
+            description: 'Desabilitar pagamento com link de pagamento'
+          },
+          label: {
+            type: 'string',
+            maxLength: 50,
+            title: 'Rótulo',
+            description: 'Nome da forma de pagamento exibido para os clientes',
+            default: 'Link Pagamento Addi'
+          },
+          text: {
+            type: 'string',
+            maxLength: 1000,
+            title: 'Descrição',
+            description: 'Texto auxiliar sobre a forma de pagamento, pode conter tags HTML'
+          },
+          icon: {
+            type: 'string',
+            maxLength: 255,
+            format: 'uri',
+            title: 'Ícone',
+            description: 'Ícone customizado para a forma de pagamento, URL da imagem'
+          }
+        },
+        title: 'Link de Pagamento',
+        description: 'Opções de forma de pagamento via Addi'
+      },
+      hide: false
     }
   }
 }

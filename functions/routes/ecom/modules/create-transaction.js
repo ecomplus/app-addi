@@ -1,7 +1,6 @@
 const ecomUtils = require('@ecomplus/utils')
 const { baseUri } = require('./../../../__env')
-const axios = require('axios')
-const { CreateAxios } = require('../../../lib/addi/create-access')
+const AddiAxios = require('../../../lib/addi/create-access')
 
 exports.post = ({ appSdk, admin }, req, res) => {
   /**
@@ -21,21 +20,39 @@ exports.post = ({ appSdk, admin }, req, res) => {
   const { storeId } = req
   // merge all app options configured by merchant
   const appData = Object.assign({}, application.data, application.hidden_data)
+
+  const isSandbox = true // TODO: false
+
   // create access with axios
-  const addiAxios = CreateAxios(appData.client_id, appData.client_secret, appData.is_sandbox, storeId)
+  const addiAxios = new AddiAxios(appData.client_id, appData.client_secret, isSandbox, storeId)
+
   // setup required `transaction` response object
   const orderId = params.order_id
-  const { amount, buyer, payer, to, items } = params
+  const { amount, buyer, to, items } = params
+
+  const transactionLink = {
+    intermediator: {
+      payment_method: params.payment_method
+    },
+    currency_id: params.currency_id,
+    currency_symbol: params.currency_symbol,
+    amount: amount.total,
+    status: {
+      current: 'pending'
+    }
+  }
+
   console.log('> Transaction #', storeId, orderId)
   const finalAmount = amount.total
   const finalFreight = amount.freight
-  let addiTransaction
-  addiTransaction = {
+
+  const addiTransaction = {
     orderId,
     totalAmount: Math.floor(finalAmount * 100),
     shippingAmount: Math.floor(finalFreight * 100) || 0,
     currency: params.currency_id || 'BRL'
   }
+
   addiTransaction.items = []
   items.forEach(item => {
     if (item.quantity > 0) {
@@ -50,7 +67,7 @@ exports.post = ({ appSdk, admin }, req, res) => {
   const parseAddress = to => ({
     lineOne: ecomUtils.lineAddress(to),
     city: to.city,
-    country: to.country_code ? to.country_code.toUpperCase() : 'BR',
+    country: to.country_code ? to.country_code.toUpperCase() : 'BR'
   })
 
   addiTransaction.client = {
@@ -66,58 +83,58 @@ exports.post = ({ appSdk, admin }, req, res) => {
 
   addiTransaction.shippingAddress = parseAddress(to)
   addiTransaction.billingAddress = params.billing_address
-  ? parseAddress(params.billing_address)
-  : addiTransaction.client.address
+    ? parseAddress(params.billing_address)
+    : addiTransaction.client.address
 
   addiTransaction.allyUrlRedirection = {
-    redirectionUrl: `https://${params.domain}/app/#/confirmation`,
-    callbackUrl: `${baseUri}/addi/postback`
-  }
-  const data = {
-    ...addiTransaction
+    redirectionUrl: `https://${params.domain}/app/#/order/${orderId}`,
+    callbackUrl: `${baseUri}/addi/webhook`
   }
 
-  addiAxios
-    .then((axios) => {
-      console.log('> SendTransaction Addi: ', data)
-      // url: 'https://cloudwalk.github.io/infinitepay-docs/#autorizando-um-pagamento',
+  addiAxios.preparing
+    .then(() => {
+      const { axios } = addiAxios
+      console.log('> SendTransaction Addi: ', addiTransaction)
       const headers = {
         Accept: 'application/json'
       }
-      // console.log('>>Before data: ', data)
       const timeout = 40000
-      return axios.post('/v1/online-applications', data, { headers, timeout })
+      return axios.post('/v1/online-applications', addiTransaction, { headers, timeout })
     })
-
-
-
-
-
-  // indicates whether the buyer should be redirected to payment link right after checkout
-  let redirectToPayment = false
-
-  /**
-   * Do the stuff here, call external web service or just fill the `transaction` object
-   * according to the `appData` configured options for the chosen payment method.
-   */
-
-  // WIP:
-  switch (params.payment_method.code) {
-    case 'credit_card':
-      // you may need to handle card hash and create transaction on gateway API
-      break
-    case 'banking_billet':
-      // create new "Boleto bancário"
-      break
-    case 'online_debit':
-      redirectToPayment = true
-      break
-    default:
-      break
-  }
-
-  res.send({
-    redirect_to_payment: redirectToPayment,
-    transaction
-  })
+    .then((data) => {
+      console.log('>>created transaction: ', data)
+      transactionLink.payment_link = data.headers.Location
+      res.send({
+        redirect_to_payment: true,
+        transaction: transactionLink
+      })
+    })
+    .catch(error => {
+      // try to debug request error
+      const errCode = 'ADDI_TRANSACTION_ERR'
+      let { message } = error
+      const err = new Error(`${errCode} #${storeId} - ${orderId} => ${message}`)
+      if (error.response) {
+        console.log(error.response)
+        const { status, data } = error.response
+        if (status !== 401 && status !== 403) {
+          err.payment = JSON.stringify(transactionLink)
+          err.status = status
+          if (typeof data === 'object' && data) {
+            err.response = JSON.stringify(data)
+          } else {
+            err.response = data
+          }
+        } else if (data && Array.isArray(data.errors) && data.errors[0] && data.errors[0].message) {
+          message = data.errors[0].message
+        }
+      } else {
+        console.error(err)
+      }
+      res.status(409)
+      res.send({
+        error: errCode,
+        message
+      })
+    })
 }

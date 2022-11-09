@@ -1,17 +1,18 @@
 const axios = require('axios')
 module.exports = (accessToken, isSandbox) => {
-
   const headers = {
-    'Content-Type': 'application/x-www-form-urlencoded'
+    'Content-Type': 'application/json'
   }
+  let baseURL = `https://auth.addi${isSandbox ? '-staging-br.com' : '.com.br'}`
+
   if (accessToken) {
     console.log('> token ', accessToken)
     headers.Authorization = `Bearer ${accessToken}`
+    baseURL = 'api.addi.com.br'
   }
 
   return axios.create({
-    baseURL: `https://auth.addi${isSandbox ? '-staging-br.' : '.'}com`,
+    baseURL,
     headers
   })
 }
-

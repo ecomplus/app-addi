@@ -1,11 +1,9 @@
-const Axios = require('./create-axios')
+const createAxios = require('./create-axios')
 const auth = require('./create-auth')
-// typeScope ===  card, if scope card_tokenization
-// typeScope === transaction, if scope for transaction
 
 const firestoreColl = 'addi_tokens'
-
-const AxiosOrToken = (resolve, reject, clientId, clientSecret, isSandbox, storeId, self) => {
+module.exports = function (clientId, clientSecret, isSandbox, storeId) {
+  const self = this
 
   let documentRef
   if (firestoreColl) {
@@ -14,68 +12,44 @@ const AxiosOrToken = (resolve, reject, clientId, clientSecret, isSandbox, storeI
       .doc(`${firestoreColl}/${storeId}`)
   }
 
-  const authenticate = (accessToken, resolve) => {
-    if (self) {
-      const axios = Axios(accessToken, isSandbox)
-      resolve(axios)
-    } else {
-      resolve(accessToken)
+  this.preparing = new Promise((resolve, reject) => {
+    const authenticate = (accessToken, isSandbox) => {
+      self.axios = createAxios(accessToken, isSandbox)
+      resolve(self)
     }
-  }
 
-  const handleAuth = (resolve) => {
-    console.log('> addi Auth ', storeId)
-    auth(clientId, clientSecret, storeId, isSandbox)
-      .then((resp) => {
-        console.log('Acesso a resposta da autorizacao',resp)
-        authenticate(resp.access_token, resolve)
-        if (documentRef) {
-          console.log('Atualizar token')
-          const date = new Date()
-          documentRef.set(
-            { 
-              ...resp, 
+    const handleAuth = (isSandbox) => {
+      console.log('> Addi Auth02 ', storeId)
+      auth(clientId, clientSecret, storeId, isSandbox)
+        .then((data) => {
+          console.log('> Addi token => ', data)
+          authenticate(data.access_token, isSandbox)
+          if (documentRef) {
+            documentRef.set({
+              ...data,
               isSandbox,
-              updated: date.toISOString()
-            }
-          ).catch(console.error)
-        }
-      })
-      .catch(reject)
-  }
+              updatedAt: new Date().toISOString()
 
-  if (documentRef) {
-    documentRef.get()
-      .then((documentSnapshot) => {
-        const data = documentSnapshot.data() || null
-        const updateTime = data && data.updated || '2022-08-22T10:24:49.950Z'
-        if (documentSnapshot.exists &&
-          Date.now() - new Date(updateTime).getTime() <= 18 * 60 * 60 * 1000 // access token expires in 24 hours, but check in 18
-        ) {
-          authenticate(data.access_token, resolve)
-        } else {
-          handleAuth(resolve)
-        }
-      })
-      .catch(console.error)
-  } else {
-    handleAuth(resolve)
-  }
-}
+            }).catch(console.error)
+          }
+        })
+        .catch(reject)
+    }
 
-const CreateAxios = (clientId, clientSecret, isSandbox, storeId) => {
-  return new Promise((resolve, reject) => {
-    AxiosOrToken(resolve, reject, clientId, clientSecret, isSandbox, storeId, this)
+    if (documentRef) {
+      documentRef.get()
+        .then((documentSnapshot) => {
+          if (documentSnapshot.exists &&
+            Date.now() - documentSnapshot.updateTime.toDate().getTime() <= 18 * 60 * 60 * 1000 // access token expires in 18 hours
+          ) {
+            authenticate(documentSnapshot.get('access_token'), isSandbox)
+          } else {
+            handleAuth(isSandbox)
+          }
+        })
+        .catch(console.error)
+    } else {
+      handleAuth(isSandbox)
+    }
   })
-}
-
-const getToken = (clientId, clientSecret, isSandbox, storeId) => {
-  return new Promise((resolve, reject) => {
-    AxiosOrToken(resolve, reject, clientId, clientSecret, isSandbox, storeId)
-  })
-}
-
-module.exports = {
-  CreateAxios,
-  getToken
 }
