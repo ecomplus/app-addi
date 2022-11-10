@@ -34,6 +34,9 @@
     "orders/payments_history": [
       "POST"
     ],
+    "orders/transactions": [
+      "PATCH"
+    ],
     "products/quantity": [],
     "products/variations/quantity": [],
     "products/price": [],
