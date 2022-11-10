@@ -88,7 +88,7 @@ exports.post = ({ appSdk, admin }, req, res) => {
 
   addiTransaction.allyUrlRedirection = {
     redirectionUrl: `https://${params.domain}/app/#/order/${orderId}`,
-    callbackUrl: `${baseUri}/addi/webhook`
+    callbackUrl: `${baseUri}/addi/webhook?storeId=${storeId}`
   }
 
   addiAxios.preparing
@@ -102,7 +102,7 @@ exports.post = ({ appSdk, admin }, req, res) => {
       return axios.post('/v1/online-applications', addiTransaction, { maxRedirects: 0, validateStatus })
     })
     .then((data) => {
-      console.log('>> Created transaction: ', data)
+      console.log('>> Created transaction <<')
       transactionLink.payment_link = data.headers.location
       res.send({
         redirect_to_payment: true,

@@ -109,6 +109,9 @@ const app = {
       'POST',          // Create payments history entry with new status
       // 'DELETE',        // Delete payments history entry
     ],
+    'orders/transactions': [
+      'PATCH'
+    ],
 
     /**
      * Set above 'quantity' and 'price' subresources if you don't need access for full product document.
