@@ -1,3 +1,3 @@
-# My Awesome E-Com Plus App
+# Addi Pagamentos
 
-Somethings about my app and what it does...
+Pix Parcelado com a Addi Pagamentos
