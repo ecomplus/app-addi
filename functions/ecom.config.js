@@ -6,9 +6,9 @@
  */
 
 const app = {
-  app_id: 114693,
-  title: 'My Awesome E-Com Plus App',
-  slug: 'my-awesome-app',
+  app_id: 126439,
+  title: 'Addi',
+  slug: 'addi',
   type: 'external',
   state: 'active',
   authentication: true,
@@ -34,13 +34,13 @@ const app = {
      * Triggered when listing payments, must return available payment methods.
      * Start editing `routes/ecom/modules/list-payments.js`
      */
-    // list_payments:        { enabled: true },
+    list_payments: { enabled: true },
 
     /**
      * Triggered when order is being closed, must create payment transaction and return info.
      * Start editing `routes/ecom/modules/create-transaction.js`
      */
-    // create_transaction:   { enabled: true },
+    create_transaction: { enabled: true },
   },
 
   /**
@@ -82,7 +82,7 @@ const app = {
       // 'DELETE',        // Delete customers
     ],
     orders: [
-      // 'GET',           // List/read orders with public and private fields
+      'GET',           // List/read orders with public and private fields
       // 'POST',          // Create orders
       // 'PATCH',         // Edit orders
       // 'PUT',           // Overwrite orders
@@ -106,8 +106,11 @@ const app = {
     ],
     'orders/payments_history': [
       // 'GET',           // List/read order payments history events
-      // 'POST',          // Create payments history entry with new status
+      'POST',          // Create payments history entry with new status
       // 'DELETE',        // Delete payments history entry
+    ],
+    'orders/transactions': [
+      'PATCH'
     ],
 
     /**
@@ -138,37 +141,131 @@ const app = {
   },
 
   admin_settings: {
-    /**
-     * JSON schema based fields to be configured by merchant and saved to app `data` / `hidden_data`, such as:
-
-     webhook_uri: {
-       schema: {
-         type: 'string',
-         maxLength: 255,
-         format: 'uri',
-         title: 'Notifications URI',
-         description: 'Unique notifications URI available on your Custom App dashboard'
-       },
-       hide: true
-     },
-     token: {
-       schema: {
-         type: 'string',
-         maxLength: 50,
-         title: 'App token'
-       },
-       hide: true
-     },
-     opt_in: {
-       schema: {
-         type: 'boolean',
-         default: false,
-         title: 'Some config option'
-       },
-       hide: false
-     },
-
-     */
+    client_id: {
+      schema: {
+        type: 'string',
+        maxLength: 64,
+        title: 'Client id'
+      },
+      hide: true
+    },
+    client_secret: {
+      schema: {
+        type: 'string',
+        maxLength: 64,
+        title: 'Client Secret'
+      },
+      hide: true
+    },
+    ally_slug: {
+      schema: {
+        type: 'string',
+        maxLength: 64,
+        title: 'Slug da conta'
+      },
+      hide: true
+    },
+    discount: {
+      schema: {
+        type: 'object',
+        required: [
+          'value'
+        ],
+        additionalProperties: false,
+        properties: {
+          apply_at: {
+            type: 'string',
+            enum: [
+              'total',
+              'subtotal',
+              'freight'
+            ],
+            default: 'subtotal',
+            title: 'Aplicar desconto em',
+            description: 'Em qual valor o desconto deverá ser aplicado no checkout'
+          },
+          type: {
+            type: 'string',
+            enum: [
+              'percentage',
+              'fixed'
+            ],
+            default: 'percentage',
+            title: 'Tipo de desconto',
+            description: 'Desconto com valor percentual ou fixo'
+          },
+          value: {
+            type: 'number',
+            minimum: -99999999,
+            maximum: 99999999,
+            title: 'Valor do desconto',
+            description: 'Valor percentual ou fixo a ser descontado, dependendo to tipo configurado'
+          }
+        },
+        title: 'Desconto',
+        description: 'Desconto a ser aplicado para pagamentos via Addi'
+      },
+      hide: false
+    },
+    min_amount: {
+      schema: {
+        type: 'number',
+        minimum: 0,
+        maximum: 99999999,
+        default: 1,
+        title: 'Mínimo para mostrar formas de pagamento',
+        description: 'Valor deve corresponder ao mesmo configurado na Addi'
+      },
+      hide: true
+    },
+    max_amount: {
+      schema: {
+        type: 'number',
+        minimum: 0,
+        maximum: 99999999,
+        default: 1,
+        title: 'Máximo para mostrar formas de pagamento',
+        description: 'Valor deve corresponder ao mesmo configurado na Addi'
+      },
+      hide: true
+    },
+    payment_link: {
+      schema: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          disable: {
+            type: 'boolean',
+            default: true,
+            title: 'Desabilitar link de pagamento',
+            description: 'Desabilitar pagamento com link de pagamento'
+          },
+          label: {
+            type: 'string',
+            maxLength: 50,
+            title: 'Rótulo',
+            description: 'Nome da forma de pagamento exibido para os clientes',
+            default: 'Link Pagamento Addi'
+          },
+          text: {
+            type: 'string',
+            maxLength: 1000,
+            title: 'Descrição',
+            description: 'Texto auxiliar sobre a forma de pagamento, pode conter tags HTML'
+          },
+          icon: {
+            type: 'string',
+            maxLength: 255,
+            format: 'uri',
+            title: 'Ícone',
+            description: 'Ícone customizado para a forma de pagamento, URL da imagem'
+          }
+        },
+        title: 'Configurações adicionais',
+        description: 'Configurações adicionais para forma de pagamento via Addi'
+      },
+      hide: false
+    }
   }
 }
 

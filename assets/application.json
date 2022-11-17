@@ -1,11 +1,20 @@
 {
-  "app_id": 9000,
-  "title": "My Awesome E-Com Plus App",
-  "slug": "my-awesome-ecom-plus-app",
+  "app_id": 126439,
+  "title": "Addi",
+  "slug": "addi",
   "type": "external",
   "state": "active",
   "authentication": true,
-  "modules": {},
+  "modules": {
+    "list_payments": {
+      "enabled": true,
+      "endpoint": "https://us-central1-addi-test-payment.cloudfunctions.net/app/ecom/modules/list-payments"
+    },
+    "create_transaction": {
+      "enabled": true,
+      "endpoint": "https://us-central1-addi-test-payment.cloudfunctions.net/app/ecom/modules/create-transaction"
+    }
+  },
   "auth_scope": {
     "stores/me": [
       "GET"
@@ -17,15 +26,149 @@
     "brands": [],
     "categories": [],
     "customers": [],
-    "orders": [],
+    "orders": [
+      "GET"
+    ],
     "carts": [],
     "orders/fulfillments": [],
-    "orders/payments_history": [],
+    "orders/payments_history": [
+      "POST"
+    ],
+    "orders/transactions": [
+      "PATCH"
+    ],
     "products/quantity": [],
     "products/variations/quantity": [],
     "products/price": [],
     "products/variations/price": []
   },
-  "auth_callback_uri": "https://us-central1-ecom-app-boilerplate.cloudfunctions.net/app/ecom/auth-callback",
+  "admin_settings": {
+    "client_id": {
+      "schema": {
+        "type": "string",
+        "maxLength": 64,
+        "title": "Client id"
+      },
+      "hide": true
+    },
+    "client_secret": {
+      "schema": {
+        "type": "string",
+        "maxLength": 64,
+        "title": "Client Secret"
+      },
+      "hide": true
+    },
+    "ally_slug": {
+      "schema": {
+        "type": "string",
+        "maxLength": 64,
+        "title": "Slug da conta"
+      },
+      "hide": true
+    },
+    "discount": {
+      "schema": {
+        "type": "object",
+        "required": [
+          "value"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "apply_at": {
+            "type": "string",
+            "enum": [
+              "total",
+              "subtotal",
+              "freight"
+            ],
+            "default": "subtotal",
+            "title": "Aplicar desconto em",
+            "description": "Em qual valor o desconto deverá ser aplicado no checkout"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "percentage",
+              "fixed"
+            ],
+            "default": "percentage",
+            "title": "Tipo de desconto",
+            "description": "Desconto com valor percentual ou fixo"
+          },
+          "value": {
+            "type": "number",
+            "minimum": -99999999,
+            "maximum": 99999999,
+            "title": "Valor do desconto",
+            "description": "Valor percentual ou fixo a ser descontado, dependendo to tipo configurado"
+          }
+        },
+        "title": "Desconto",
+        "description": "Desconto a ser aplicado para pagamentos via Addi"
+      },
+      "hide": false
+    },
+    "min_amount": {
+      "schema": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 99999999,
+        "default": 1,
+        "title": "Mínimo para mostrar formas de pagamento",
+        "description": "Valor deve corresponder ao mesmo configurado na Addi"
+      },
+      "hide": true
+    },
+    "max_amount": {
+      "schema": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 99999999,
+        "default": 1,
+        "title": "Máximo para mostrar formas de pagamento",
+        "description": "Valor deve corresponder ao mesmo configurado na Addi"
+      },
+      "hide": true
+    },
+    "payment_link": {
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "disable": {
+            "type": "boolean",
+            "default": true,
+            "title": "Desabilitar link de pagamento",
+            "description": "Desabilitar pagamento com link de pagamento"
+          },
+          "label": {
+            "type": "string",
+            "maxLength": 50,
+            "title": "Rótulo",
+            "description": "Nome da forma de pagamento exibido para os clientes",
+            "default": "Link Pagamento Addi"
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 1000,
+            "title": "Descrição",
+            "description": "Texto auxiliar sobre a forma de pagamento, pode conter tags HTML"
+          },
+          "icon": {
+            "type": "string",
+            "maxLength": 255,
+            "format": "uri",
+            "title": "Ícone",
+            "description": "Ícone customizado para a forma de pagamento, URL da imagem"
+          }
+        },
+        "title": "Configurações adicionais",
+        "description": "Configurações adicionais para forma de pagamento via Addi"
+      },
+      "hide": false
+    }
+  },
+  "auth_callback_uri": "https://us-central1-addi-test-payment.cloudfunctions.net/app/ecom/auth-callback",
   "version": "1.0.0"
 }
