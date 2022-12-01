@@ -8,11 +8,11 @@
   "modules": {
     "list_payments": {
       "enabled": true,
-      "endpoint": "https://us-central1-addi-test-payment.cloudfunctions.net/app/ecom/modules/list-payments"
+      "endpoint": "https://us-central1-ecom-addi.cloudfunctions.net/app/ecom/modules/list-payments"
     },
     "create_transaction": {
       "enabled": true,
-      "endpoint": "https://us-central1-addi-test-payment.cloudfunctions.net/app/ecom/modules/create-transaction"
+      "endpoint": "https://us-central1-ecom-addi.cloudfunctions.net/app/ecom/modules/create-transaction"
     }
   },
   "auth_scope": {
@@ -169,6 +169,6 @@
       "hide": false
     }
   },
-  "auth_callback_uri": "https://us-central1-addi-test-payment.cloudfunctions.net/app/ecom/auth-callback",
+  "auth_callback_uri": "https://us-central1-ecom-addi.cloudfunctions.net/app/ecom/auth-callback",
   "version": "1.0.0"
 }
