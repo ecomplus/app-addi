@@ -171,7 +171,7 @@ const app = {
         default: false,
         title: 'Credenciais de teste'
       },
-      hide: false
+      hide: true
     },
     discount: {
       schema: {
