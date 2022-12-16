@@ -59,20 +59,19 @@ exports.post = async ({ appSdk }, req, res) => {
   }
 
   const { discount } = appData
+  
+  const minAmount = validatePaymentByAddi && validatePaymentByAddi.minAmount ? validatePaymentByAddi.minAmount : (appData.min_amount || 1)
+  const maxAmount = validatePaymentByAddi && validatePaymentByAddi.maxAmount ? validatePaymentByAddi.maxAmount : (appData.max_amount || 2000)
 
   const listPaymentMethods = ['payment_link']
   // setup payment gateway object
   listPaymentMethods.forEach(paymentMethod => {
     const isLinkPayment = paymentMethod === 'payment_link'
-    const minAmount = appData.min_amount || 1
-    const maxAmount = appData.max_amount || 1
     const methodConfig = (appData[paymentMethod] || {})
 
     let validateAmount = false
-    if (amount.total && (validatePaymentByAddi.minAmount && validatePaymentByAddi.maxAmount)) {
-      validateAmount = (amount.total >= minAmount && amount.total <= maxAmount) &&
-        (amount.total >= validatePaymentByAddi.minAmount &&
-          amount.total <= validatePaymentByAddi.maxAmount)
+    if (amount.total && (minAmount && maxAmount)) {
+      validateAmount = (amount.total >= minAmount && amount.total <= maxAmount) 
     }
 
     // Workaround for showcase
@@ -91,6 +90,7 @@ exports.post = async ({ appSdk }, req, res) => {
         },
         intermediator
       }
+      console.log('>>> test:', JSON.stringify(gateway))
       if (discount && discount.value > 0 && (!amount.discount || discount.cumulative_discount !== false)) {
         gateway.discount = {
           apply_at: discount.apply_at,
