@@ -21,7 +21,7 @@ exports.post = ({ appSdk, admin }, req, res) => {
   // merge all app options configured by merchant
   const appData = Object.assign({}, application.data, application.hidden_data)
 
-  const isSandbox = true // TODO: false
+  const isSandbox = appData.isSandbox ? true : false
 
   // create access with axios
   const addiAxios = new AddiAxios(appData.client_id, appData.client_secret, isSandbox, storeId)

@@ -165,6 +165,14 @@ const app = {
       },
       hide: true
     },
+    isSandbox: {
+      schema: {
+        type: 'boolean',
+        default: false,
+        title: 'Credenciais de teste'
+      },
+      hide: false
+    },
     discount: {
       schema: {
         type: 'object',
