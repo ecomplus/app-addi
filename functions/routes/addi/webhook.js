@@ -1,4 +1,3 @@
-
 const findOrderById = (appSdk, storeId, auth, orderId) => {
   return new Promise((resolve, reject) => {
     appSdk.apiRequest(storeId, `/orders/${orderId}.json`, 'GET', null, auth)
@@ -41,7 +40,8 @@ exports.post = ({ appSdk, admin }, req, res) => {
   } = body
   console.log('>> Store: ', storeId, ' body: ', JSON.stringify(body), ' <<')
   if (storeId > 100) {
-    appSdk.getAuth(storeId)
+    res.status(200).send(body)
+    return appSdk.getAuth(storeId)
       .then(async (auth) => {
         try {
           const order = await findOrderById(appSdk, storeId, auth, orderId)
@@ -79,17 +79,7 @@ exports.post = ({ appSdk, admin }, req, res) => {
             )
             if (responseUpdateTransaction) {
               console.log('> UPDATE Transaction OK')
-              return res.sendStatus(200)
             }
-            return res.send({
-              status: 404,
-              msg: `Transaction error #${applicationId}, property not found invalid store`
-            })
-          } else {
-            return res.send({
-              status: 404,
-              msg: `Order #${orderId}, not found`
-            })
           }
         } catch (error) {
           console.error(error)
@@ -103,14 +93,19 @@ exports.post = ({ appSdk, admin }, req, res) => {
             err.response = JSON.stringify(response.data)
             console.error(err)
           }
-          return res.send({
-            status: status || 500,
-            msg: `#${storeId} ADDI Webhook error`
-          })
+          if (!res.headersSent) {
+            res.send({
+              status: status || 500,
+              msg: `#${storeId} ADDI Webhook error`
+            })
+          }
         }
       })
       .catch(() => {
-        return res.sendStatus(401)
+        console.log('Unauthorized')
+        if (!res.headersSent) {
+          res.sendStatus(401)
+        }
       })
   } else {
     return res.send({
