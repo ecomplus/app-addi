@@ -169,9 +169,9 @@ const app = {
       schema: {
         type: 'boolean',
         default: false,
-        title: 'Credenciais de teste'
+        title: 'Api de testes'
       },
-      hide: true
+      hide: false
     },
     discount: {
       schema: {
