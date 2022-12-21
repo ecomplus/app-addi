@@ -61,7 +61,7 @@ const app = {
       // 'DELETE',        // Delete products
     ],
     brands: [
-      // 'GET',           // List/read brands with public and private fields
+     // 'GET',           // List/read brands with public and private fields
       // 'POST',          // Create brands
       // 'PATCH',         // Edit brands
       // 'PUT',           // Overwrite brands
