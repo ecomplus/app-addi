@@ -23,7 +23,7 @@ exports.post = async ({ appSdk }, req, res) => {
   // merge all app options configured by merchant
   const appData = Object.assign({}, application.data, application.hidden_data)
 
-  const isSandbox = true /* appData.isSandbox ? true : false */
+  const isSandbox = appData.isSandbox ? true : false
   console.log('> List Payment #', storeId, `${isSandbox ? '-isSandbox' : ''}`)
 
   if (!appData.client_id || !appData.client_secret) {
