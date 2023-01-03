@@ -105,7 +105,7 @@ const app = {
       // 'DELETE',        // Delete fulfillment event
     ],
     'orders/payments_history': [
-      // 'GET',           // List/read order payments history events
+      'GET',           // List/read order payments history events
       'POST',          // Create payments history entry with new status
       // 'DELETE',        // Delete payments history entry
     ],
