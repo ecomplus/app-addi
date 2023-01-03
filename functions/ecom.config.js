@@ -165,14 +165,6 @@ const app = {
       },
       hide: true
     },
-    isSandbox: {
-      schema: {
-        type: 'boolean',
-        default: false,
-        title: 'Api de testes'
-      },
-      hide: false
-    },
     discount: {
       schema: {
         type: 'object',
