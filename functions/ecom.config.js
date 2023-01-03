@@ -28,7 +28,7 @@ const app = {
      * Triggered to validate and apply discount value, must return discount and conditions.
      * Start editing `routes/ecom/modules/apply-discount.js`
      */
-    // apply_discount:      { enabled: true },
+    // apply_discount:     { enabled: true },
 
     /**
      * Triggered when listing payments, must return available payment methods.
