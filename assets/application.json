@@ -32,6 +32,7 @@
     "carts": [],
     "orders/fulfillments": [],
     "orders/payments_history": [
+      "GET",
       "POST"
     ],
     "orders/transactions": [
