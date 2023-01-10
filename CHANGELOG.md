@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 1.0.0 (2023-01-10)
+
+
+### Features
+
+* add addi payment ([f3a8d55](https://github.com/ecomplus/application-starter/commit/f3a8d55ee79b45700d436db4fab62e8c5072a0d5))
+* create auth authentication ([4c6381a](https://github.com/ecomplus/application-starter/commit/4c6381a3c6870e24a11bb0ce4ed094df8def5d7f))
+
+
+### Bug Fixes
+
+* **deps:** update all non-major ([3792733](https://github.com/ecomplus/application-starter/commit/3792733104cd952c13218679b0562c55fa76c4cc))
+
 ## [1.0.0-starter.26](https://github.com/ecomplus/application-starter/compare/v1.0.0-starter.25...v1.0.0-starter.26) (2022-02-24)
 
 ## [1.0.0-starter.25](https://github.com/ecomplus/application-starter/compare/v1.0.0-starter.24...v1.0.0-starter.25) (2022-02-24)
